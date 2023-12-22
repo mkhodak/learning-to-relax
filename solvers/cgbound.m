@@ -1,3 +1,7 @@
+% computes a bound on the number of iterations required for
+% SSOR-preconditioned CG to solve a linear system to a specified tolerance;
+% the bound is derived from the condition number analysis of Axelsson
+% (1994, Theorem 7.17)
 function bound = cgbound(A, omega, epsilon)
 
 D = diag(diag(A));

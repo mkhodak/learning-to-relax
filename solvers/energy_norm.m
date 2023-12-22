@@ -1,3 +1,5 @@
+% computes a bound on the energy norm of the SOR iteration matrix
+% (Hackbusch 2016, Corollary 3.45)
 function bound = energy_norm(A, omega)
 
 Omega = (2 - omega) / (2*omega);

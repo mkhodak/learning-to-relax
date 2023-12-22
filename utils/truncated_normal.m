@@ -1,3 +1,4 @@
+% samples a radially-truncated standard Gaussian using rejection sampling
 function sample = truncated_normal(n)
 
 while true
@@ -6,4 +7,5 @@ while true
         return
     end
 end
+
 end

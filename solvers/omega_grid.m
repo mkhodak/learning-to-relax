@@ -1,3 +1,4 @@
+% returns a grid of evenly spaced omegas plus the optimal omega for SOR
 function grid = omega_grid(A, omega_min, omega_max, step)
 
 opt = omega_opt(A);

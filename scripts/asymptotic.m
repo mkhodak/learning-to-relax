@@ -1,3 +1,9 @@
+% plots several quantities associated with the near-asymptotic bound on the
+% number of SOR iterations required to converge
+
+addpath ../solvers 
+addpath ../utils
+
 A = delsq(numgrid('S', 12));
 n = length(A);
 D = diag(diag(A));
@@ -5,13 +11,17 @@ L = tril(A,-1);
 b = truncated_normal(n);
 epsilon = 1E-8;
 
+% computes and plots different estimates of the number of SOR iterations, 
+% as well as the asymptocity (difference betweeen spectral norm and
+% spectral radius at convergence), all at different settings of omega
+
 omegas = omega_grid(A, 1., 1.99, .01);
 actual = zeros(size(omegas));
 radius = zeros(size(omegas));
 errs = zeros(size(omegas));
 energy = zeros(size(omegas));
 
-for i = 1:length(omegas)
+parfor i = 1:length(omegas)
     k = sor(A, b, zeros(n, 1), omegas(i), epsilon);
     C = full(eye(n) - A * inv(D/omegas(i)+L));
     radius(i) = max(abs(eig(C)));
@@ -34,7 +44,7 @@ ax.YAxis.FontSize = 16;
 ylabel('iterations', 'FontSize', 20)
 xlabel('\omega', 'FontSize', 24);
 set(gcf, 'PaperPosition', [0, 0, 7, 5]);
-print('bound_comparison.png', '-dpng', '-r256');
+print('plots/bound_comparison.png', '-dpng', '-r256');
 hold off;
 
 ax = gca(figure(2));
@@ -48,14 +58,17 @@ ax.XAxis.FontSize = 16;
 ax.YAxis.FontSize = 16;
 xlabel('\omega', 'FontSize', 24);
 set(gcf, 'PaperPosition', [0, 0, 7, 5]);
-print('asymptocity.png', '-dpng', '-r256');
+print('plots/asymptocity.png', '-dpng', '-r256');
 hold off;
+
+% computes values of tau and beta at different offsets of the original
+% linear system matrix A by multiples of the identity
 
 cs = linspace(-.15, .45, 97);
 taus = zeros(size(cs));
 betas = zeros(size(cs));
 parfor i = 1:length(cs)
-    Ac = A + cs(i)*eye(n);
+    Ac = A + cs(i)*speye(n);
     omegas = omega_grid(A, 1., 1.9, .01);
     D = diag(diag(Ac));
     L = tril(Ac,-1);
@@ -84,5 +97,5 @@ ax.YAxis.FontSize = 16;
 xlabel('c', 'FontSize', 24);
 axis([-inf inf 0. 1.]);
 set(gcf, 'PaperPosition', [0, 0, 7, 5]);
-print('tau_beta.png', '-dpng', '-r256');
+print('plots/tau_beta.png', '-dpng', '-r256');
 hold off;

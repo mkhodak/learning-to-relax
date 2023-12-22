@@ -1,3 +1,11 @@
+% computes and plots the number of iterations required for SOR to converge,
+% as well as the near-asymptotic bound for comparison, average across forty
+% different randomly sampled linear systems, where the randomness
+% determines a scalar offset of the diagonal
+
+addpath ../solvers 
+addpath ../utils
+
 A = delsq(numgrid('S', 12));
 n = length(A);
 D = diag(diag(A));
@@ -6,6 +14,7 @@ epsilon = 1E-8;
 trials = 40;
 omegas = omega_grid(A, 1., 1.99, .01);
 
+% low-variance offset distribution
 cs = -.15 + .6 * betarnd(2., 6., trials, 1);
 taus = zeros(size(cs));
 betas = zeros(size(cs));
@@ -14,7 +23,7 @@ dynamic_actual = 0.0;
 predicted = zeros(size(omegas));
 dynamic_predicted = 0.0;
 for i = 1:length(cs)
-    Ac = A + cs(i)*eye(n);
+    Ac = A + cs(i)*speye(n);
     b = truncated_normal(n);
     D = diag(diag(Ac));
     L = tril(Ac,-1);
@@ -53,9 +62,10 @@ ylabel('iterations', 'FontSize', 20)
 xlabel('\omega', 'FontSize', 24);
 set(gcf, 'PaperPosition', [0, 0, 7, 5]);
 legend('', 'actual cost', '(instance-optimal)', '', 'near-asymptotic bound', '(instance-optimal)', 'Location', 'north', 'FontSize', 18);
-print('low_variance.png', '-dpng', '-r256');
+print('plots/low_variance.png', '-dpng', '-r256');
 hold off;
 
+% high-variance offset distribution
 cs = -.15 + .6 * betarnd(.5, 1.5, trials, 1);
 taus = zeros(size(cs));
 betas = zeros(size(cs));
@@ -64,7 +74,7 @@ dynamic_actual = 0.0;
 predicted = zeros(size(omegas));
 dynamic_predicted = 0.0;
 for i = 1:length(cs)
-    Ac = A + cs(i)*eye(n);
+    Ac = A + cs(i)*speye(n);
     b = truncated_normal(n);
     D = diag(diag(Ac));
     L = tril(Ac,-1);
@@ -104,5 +114,5 @@ xlabel('\omega', 'FontSize', 24);
 set(gcf, 'PaperPosition', [0, 0, 7, 5]);
 leg = legend('', 'actual cost', '(instance-optimal)', '', 'near-asymptotic bound', '(instance-optimal)', 'Location', 'north', 'FontSize', 18);
 leg.Position(1) = leg.Position(1) + .1;
-print('high_variance.png', '-dpng', '-r256');
+print('plots/high_variance.png', '-dpng', '-r256');
 hold off;

@@ -1,3 +1,11 @@
+% compares the number of iterations required to solve a linear system when
+% the target vector is drawn from a truncated Gaussian vs. when it is
+% generated using the smallest eigenvector of the iteration matrix for
+% omega=1.4
+
+addpath ../solvers
+addpath ../utils
+
 A = delsq(numgrid('S', 12));
 n = length(A);
 D = diag(diag(A));
@@ -14,7 +22,7 @@ gauss_std = zeros(size(omegas));
 gauss_min = zeros(size(omegas));
 gauss_max = zeros(size(omegas));
 
-for i = 1:length(omegas)
+parfor i = 1:length(omegas)
     degen_cost(i) = sor(A, degen, zeros(n, 1), omegas(i), epsilon);
     costs = zeros(40, 1);
     for j = 1:length(costs)
@@ -37,5 +45,5 @@ ylabel('iterations', 'FontSize', 20)
 xlabel('\omega', 'FontSize', 24);
 set(gcf, 'PaperPosition', [0, 0, 7, 5]);
 axis([1., 1.9, -inf, inf]);
-print('degenerate.png', '-dpng', '-r256');
+print('plots/degenerate.png', '-dpng', '-r256');
 hold off;
