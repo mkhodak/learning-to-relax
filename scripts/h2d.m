@@ -102,89 +102,61 @@ for nxidx = 1:nnxs
     % evaluates SSOR-preconditioned CG at different settings of omega
     for omegaidx = 1:length(omegas)
         omega = omegas(omegaidx);
-        if nx == 100 | omega == 1. | omega == 1.5
-            name = string(omega);
-            niters = 0; err = 0.;
-            iterations = zeros(T, 1);
-            tic;
-            pde = Heat2D(coefficient, forcing, initial, nx, dt);
-            printstep = printerval;
-            for i = 1:T
-                [A, b] = pde.crank_nicolson_system();
-                [iterations(i), u] = ssor_pcg(A, b, pde.u, omega, epsilon);
-                niters = niters + iterations(i);
-                err = max(err, norm(U(i, :)'-u)/norm(U(i, :)));
-                pde.update(u);
-                if i >= printstep
-                    fprintf(strcat('[n=%d] ', strrep(name, '\', '\\'), ': step %d / %d\n'), pde.n, i, T);
-                    printstep = printstep + printerval;
-                end
-            end
-            results{name}{'wallclock'}(nxidx) = toc;
-            results{name}{'iterations'}(nxidx) = niters;
-            results{name}{'error'}(nxidx) = err;
-            niter_grid(nxidx, :, omegaidx) = iterations;
-        end
-    end
-
-    if nx == 100
-    
-        % finds the instance-optimal settings of omega and computes rough
-        % approximations to the iteration count profile
-        name = 'golden section';
+        name = string(omega);
+        niters = 0; err = 0.;
+        iterations = zeros(T, 1);
+        tic;
         pde = Heat2D(coefficient, forcing, initial, nx, dt);
         printstep = printerval;
         for i = 1:T
             [A, b] = pde.crank_nicolson_system();
-            eval_omega = @(omega) ssor_pcg(A, b, pde.u, omega, epsilon);
-            [og, ng] = golden_section(eval_omega, omegas, niter_grid(nxidx, i, 1:length(omegas)), Ng);
-            omega_grid(nxidx, i, :) = og; niter_grid(nxidx, i, :) = ng;
-            contours(nxidx, i, :) = round(interp1(og, ng, g));
-            pde.update(U(i, :)');
+            [iterations(i), u] = ssor_pcg(A, b, pde.u, omega, epsilon);
+            niters = niters + iterations(i);
+            err = max(err, norm(U(i, :)'-u)/norm(U(i, :)));
+            pde.update(u);
             if i >= printstep
                 fprintf(strcat('[n=%d] ', strrep(name, '\', '\\'), ': step %d / %d\n'), pde.n, i, T);
                 printstep = printstep + printerval;
             end
         end
-    
-        % evaluates always using the best fixed setting of omega
-        name = 'Fixed Optimal';
-        [~, omegaidx] = min(mean(contours(nxidx, :, :)));
-        omega = g(omegaidx);
-        results{name}{'actions'}(nxidx) = omega;
-        if min(abs(omegas-omega)) == 0.
-            results{name}{'iterations'}(nxidx) = results{string(omega)}{'iterations'}(nxidx);
-            results{name}{'error'}(nxidx) = results{string(omega)}{'error'}(nxidx);
-        else
-            niters = 0; err = 0.;
-            pde = Heat2D(coefficient, forcing, initial, nx, dt);
-            printstep = printerval;
-            for i = 1:T
-                [A, b] = pde.crank_nicolson_system();
-                [niter, u] = ssor_pcg(A, b, pde.u, omega, epsilon);
-                niters = niters + niter;
-                err = max(err, norm(U(i, :)'-u)/norm(U(i, :)));
-                pde.update(u);
-                if i >= printstep
-                    fprintf(strcat('[n=%d] ', strrep(name, '\', '\\'), ': step %d / %d\n'), pde.n, i, T);
-                    printstep = printstep + printerval;
-                end
-            end
-            results{name}{'iterations'}(nxidx) = niters;
-            results{name}{'error'}(nxidx) = err;
+        results{name}{'wallclock'}(nxidx) = toc;
+        results{name}{'iterations'}(nxidx) = niters;
+        results{name}{'error'}(nxidx) = err;
+        niter_grid(nxidx, :, omegaidx) = iterations;
+    end
+
+    % finds the instance-optimal settings of omega and computes rough
+    % approximations to the iteration count profile
+    name = 'golden section';
+    pde = Heat2D(coefficient, forcing, initial, nx, dt);
+    printstep = printerval;
+    for i = 1:T
+        [A, b] = pde.crank_nicolson_system();
+        eval_omega = @(omega) ssor_pcg(A, b, pde.u, omega, epsilon);
+        [og, ng] = golden_section(eval_omega, omegas, niter_grid(nxidx, i, 1:length(omegas)), Ng);
+        omega_grid(nxidx, i, :) = og; niter_grid(nxidx, i, :) = ng;
+        contours(nxidx, i, :) = round(interp1(og, ng, g));
+        pde.update(U(i, :)');
+        if i >= printstep
+            fprintf(strcat('[n=%d] ', strrep(name, '\', '\\'), ': step %d / %d\n'), pde.n, i, T);
+            printstep = printstep + printerval;
         end
-    
-        % evaluates always using the instance-optimal omega
-        name = 'Instance-Optimal';
-        mins = min(niter_grid(nxidx, :, :), [], 3);
+    end
+
+    % evaluates always using the best fixed setting of omega
+    name = 'Fixed Optimal';
+    [~, omegaidx] = min(mean(contours(nxidx, :, :)));
+    omega = g(omegaidx);
+    results{name}{'actions'}(nxidx) = omega;
+    if min(abs(omegas-omega)) == 0.
+        results{name}{'iterations'}(nxidx) = results{string(omega)}{'iterations'}(nxidx);
+        results{name}{'error'}(nxidx) = results{string(omega)}{'error'}(nxidx);
+    else
         niters = 0; err = 0.;
         pde = Heat2D(coefficient, forcing, initial, nx, dt);
         printstep = printerval;
         for i = 1:T
             [A, b] = pde.crank_nicolson_system();
-            argmins = find(niter_grid(nxidx, i, :) == mins(i));
-            omega = .5 * (omega_grid(nxidx, i, min(argmins)) + omega_grid(nxidx, i, max(argmins)));
-            results{name}{'actions'}(nxidx, i) = omega;
             [niter, u] = ssor_pcg(A, b, pde.u, omega, epsilon);
             niters = niters + niter;
             err = max(err, norm(U(i, :)'-u)/norm(U(i, :)));
@@ -196,8 +168,30 @@ for nxidx = 1:nnxs
         end
         results{name}{'iterations'}(nxidx) = niters;
         results{name}{'error'}(nxidx) = err;
-    
     end
+
+    % evaluates always using the instance-optimal omega
+    name = 'Instance-Optimal';
+    mins = min(niter_grid(nxidx, :, :), [], 3);
+    niters = 0; err = 0.;
+    pde = Heat2D(coefficient, forcing, initial, nx, dt);
+    printstep = printerval;
+    for i = 1:T
+        [A, b] = pde.crank_nicolson_system();
+        argmins = find(niter_grid(nxidx, i, :) == mins(i));
+        omega = .5 * (omega_grid(nxidx, i, min(argmins)) + omega_grid(nxidx, i, max(argmins)));
+        results{name}{'actions'}(nxidx, i) = omega;
+        [niter, u] = ssor_pcg(A, b, pde.u, omega, epsilon);
+        niters = niters + niter;
+        err = max(err, norm(U(i, :)'-u)/norm(U(i, :)));
+        pde.update(u);
+        if i >= printstep
+            fprintf(strcat('[n=%d] ', strrep(name, '\', '\\'), ': step %d / %d\n'), pde.n, i, T);
+            printstep = printstep + printerval;
+        end
+    end
+    results{name}{'iterations'}(nxidx) = niters;
+    results{name}{'error'}(nxidx) = err;
 
     % evaluates using Tsallis-INF to set omega
     name = 'Tsallis-INF';
@@ -257,13 +251,9 @@ for nxidx = 1:nnxs
 
 end
 
-results{'contours'} = contours;
-save('plots/h2d.mat', 'results');
-
 % plots contour plot of iteration costs for nx=100, as well as the actions
 % taken by Tsallis-INF, ChebCB, the fixed optimum, and instance optima
 ax = gca(figure(1));
-contours = results{'contours'};
 c = contour(1:T, linspace(1., 1.95, 96), squeeze(contours(3, :, :))');
 i = 1;
 levels{i} = ''; i=i+1;
