@@ -12,4 +12,4 @@ It also includes new experiments on accelerating a simulation of the heat equati
 <tt>learning.m</tt>: compares several fixed settings of the SOR relaxation parameter with a bandit algorithm  
 
 ## Reference:
-Mikhail Khodak, Edmond Chow, Maria-Florina Balcan, Ameet Talwalkar. *Learning to relax: Setting solver parameters across a sequence of linear system instances*. 2023.
+Mikhail Khodak, Edmond Chow, Maria-Florina Balcan, Ameet Talwalkar. *Learning to relax: Setting solver parameters across a sequence of linear system instances*. ICLR 2024.

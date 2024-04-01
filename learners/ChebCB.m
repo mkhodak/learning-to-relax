@@ -128,7 +128,7 @@ classdef ChebCB < handle
                 if update || i == obj.actions(obj.t)
                     idx = obj.actions == i;
                     if sum(idx) > 0
-                        obj.theta(i, :) = obj.features(idx, :) \ (obj.losses(idx)-1.) / obj.scale;
+                        obj.theta(i, :) = lsqminnorm(obj.features(idx, :), (obj.losses(idx)-1.) / obj.scale);
                         if any(abs(obj.theta(i, :)) > ub)
                              [obj.theta(i, :), resnorm] = lsqlin(obj.features(idx, :), (obj.losses(idx)-1.) / obj.scale, [], [], [], [], lb, ub, obj.theta(i, :), obj.solver_options);
                         end
