@@ -7,7 +7,7 @@ This repository contains code to reproduce the empirical results in [our paper](
 <tt>cg.m</tt>: computes bounds on the performance of CG across different relaxation parameters  
 <tt>comparators.m</tt>: computes average SOR performance across distributions over linear systems  
 <tt>contextual.m</tt>: evaluates contextual bandit algorithms for setting the SOR relaxation parameter  
-<tt>degenerate.m</tt>: compares SOR performance on degenerate and stochastic target vectors
+<tt>degenerate.m</tt>: compares SOR performance on degenerate and stochastic target vectors  
 <tt>h2d.m</tt>: evaluates different approaches for accelerating a heat equation simulation  
 <tt>learning.m</tt>: compares several fixed settings of the SOR relaxation parameter with a bandit algorithm  
 
